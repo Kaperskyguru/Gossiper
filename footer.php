@@ -1,3 +1,38 @@
+            <?php
+            for ($i = 0; $i <= 7; $i++) {
+                 $error[$i] = "";
+            }
+            
+            if($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_POST['post_title']) && !empty($_POST['post_content'])){
+
+                $post_title = $_POST['post_title'];
+                $post_content = $_POST['post_content'];
+                $post_location = $_POST['post_location'];
+                $post_image = uploadImage('res/img/');
+
+                if(empty($post_title)){
+                    $error[0] = "no title";
+                }else{
+                    $gossipModel->setPost_title($post_title);
+                }
+                if(empty($post_content)){
+                     $error[1] = "no Content";
+                }else{
+                    $gossipModel->setPost_content($post_content);
+                }
+                if(empty($post_image)){
+                    $error[3] = "no Image";
+                }else{
+                    $gossipModel->setPost_image(($post_image));
+                }
+                if(!ctype_alpha($error)){
+                        $locationModel->setState($post_location);
+                        $gossipModel->setloc_id($locationController->getLocationIDByState($locationModel));
+                        $gossipController->addGossip($gossipModel);
+                }
+            }
+
+            ?>
             <!--Modal: Start a gossip -->
             <div class="modal fade" id="modalStartGossip" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                 <div class="modal-dialog cascading-modal" role="document">
@@ -12,74 +47,46 @@
                         </div>
                         <!--Body-->
                         <div class="modal-body mb-0">
-                            <div class="md-form form-sm">
-                                <i class="fa fa-tag prefix"></i>
-                                <input type="text" id="form21" class="form-control">
-                                <label for="form21">Enter Gossip Title</label>
-                                <div class="error">*</div>
-                            </div>
-                            <div class="col-md-12 mr-auto">
-                                <select class="form-control" name="locationOrder"> 
-                                    <option value="" disabled selected>Select Gossip Section / Location</option>
-                                    <option value="All">All Sections</option>
-                                    <option value="Abia">Abia</option>
-                                    <option value="Adamawa">Adamawa</option>
-                                    <option value="Anambra">Anambra</option>
-                                    <option value="Akwa-Ibom">Akwa-Ibom</option>
-                                    <option value="Bauchi">Bauchi</option>
-                                    <option value="Bayelsa">Bayelsa</option>
-                                    <option value="Benue">Benue</option>
-                                    <option value="Borno">Borno</option>
-                                    <option value="Cross-River">Cross-River</option>
-                                    <option value="Delta">Delta</option>
-                                    <option value="Ebonyi">Ebonyi</option>
-                                    <option value="Enugu">Enugu</option>
-                                    <option value="Edo">Edo</option>
-                                    <option value="Ekiti">Ekiti</option>
-                                    <option value="Gombe">Gombe</option>
-                                    <option value="Imo">Imo</option>
-                                    <option value="Jigawa">Jigawa</option>
-                                    <option value="Kaduna">Kaduna</option>
-                                    <option value="Kanu">Kanu</option>
-                                    <option value="Katsina">Katsina</option>
-                                    <option value="Kebbi">Kebbi</option>
-                                    <option value="Kogi">Kogi</option>
-                                    <option value="Kwara">Kwara</option>
-                                    <option value="Lagos">Lagos</option>
-                                    <option value="Nasarawa">Nasarawa</option>
-                                    <option value="Niger">Niger</option>
-                                    <option value="Ogun">Ogun</option>
-                                    <option value="Ondo">Ondo</option>
-                                    <option value="Osun">Osun</option>
-                                    <option value="Oyo">Oyo</option>
-                                    <option value="Plateau">Plateau</option>
-                                    <option value="Rivers">Rivers</option>
-                                    <option value="Sokoto">Sokoto</option>
-                                    <option value="Taraba">Taraba</option>
-                                    <option value="Yobe">Yobe</option>
-                                    <option value="Zamfara">Zamfara</option>
-                                    <option value="Abuja">Abuja</option>
-                                </select>
-                                
-                            </div>
-                            <div class="md-form form-sm">
-                                <i class="fa fa-pencil prefix"></i>
-                                <textarea type="text" id="form8" class="md-textarea mb-0"></textarea>
-                                <label for="form8">Enter Gossip Contents</label>
-                                <div class="error">*</div>
-                            </div>
-                            <div class="file-field">
-                                <div class="btn btn-primary btn-sm">
-                                    <span>Choose file</span>
-                                    <input type="file">
+                            <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST" enctype="multipart/form-data">
+                                <div class="md-form form-sm">
+                                    <i class="fa fa-tag prefix"></i>
+                                    <input type="text" id="post_title" name="post_title" class="form-control">
+                                    <label for="form21">Enter Gossip Title</label>
+                                    <div class="error"><?php print_r($error[0]) ?></div>
                                 </div>
-                                <div class="file-path-wrapper">
-                                   <input class="file-path validate" type="text" placeholder="Upload Image If Any(optional)">
+                                <div class="col-md-12 mr-auto">
+                                    <select class="form-control" name="post_location" id="post_location"> 
+                                        <option value="" disabled selected>Select Gossip Section / Location</option>
+                                        <?php 
+                                            $states = $locationController->getLocations();
+                                            while ($row = $states->fetch(PDO::FETCH_ASSOC)) {
+                                                extract($row);
+                                                echo "<option>$state</option>";
+                                            }
+                                        ?>
+                                        
+                                    </select>
+                                    
                                 </div>
-                            </div>
-                            <div class="text-center mt-1-half myHead-nxt">
-                                <button class="btn btn-info mb-2">Post <i class="fa fa-send ml-1"></i></button>
-                            </div>
+                                <div class="md-form form-sm">
+                                    <i class="fa fa-pencil prefix"></i>
+                                    <textarea type="text" id="post_content" name="post_content" class="md-textarea mb-0"></textarea>
+                                    <label for="form8">Enter Gossip Contents</label>
+                                    <div class="error"><?php print_r($error[2]) ?></div>
+                                </div>
+                                <div class="file-field">
+                                    <div class="btn btn-primary btn-sm">
+                                        <span>Choose file</span>
+                                        <input type="file" id="post_image" name="post_image">
+                                    </div>
+                                    <div class="file-path-wrapper">
+                                       <input class="file-path validate" type="text" value="<?php print_r($error[4]) ?>" placeholder="Upload Image If Any(optional)">
+                                    </div>
+                                </div>
+                                <div class="text-center mt-1-half myHead-nxt">
+                                    <button class="btn btn-info mb-2" id="submit">Post <i class="fa fa-send ml-1"></i></button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                     <!--/.Content-->
@@ -132,59 +139,31 @@
                         </div>
                         <!--Body-->
                         <div class="modal-body mb-0">
-                            <div class="md-form form-sm">
-                                <i class="fa fa-tag prefix"></i>
-                                <input type="text" id="form21" class="form-control">
-                                <label for="form21">Enter Section Title</label>
-                                <div class="error">*</div>
-                            </div>
-                            <div class="col-md-12 mr-auto">
-                                <select class="form-control" name="locationOrder"> 
-                                    <option value="" disabled selected>Select Location</option>
-                                    <option value="Abia">Abia</option>
-                                    <option value="Adamawa">Adamawa</option>
-                                    <option value="Anambra">Anambra</option>
-                                    <option value="Akwa-Ibom">Akwa-Ibom</option>
-                                    <option value="Bauchi">Bauchi</option>
-                                    <option value="Bayelsa">Bayelsa</option>
-                                    <option value="Benue">Benue</option>
-                                    <option value="Borno">Borno</option>
-                                    <option value="Cross-River">Cross-River</option>
-                                    <option value="Delta">Delta</option>
-                                    <option value="Ebonyi">Ebonyi</option>
-                                    <option value="Enugu">Enugu</option>
-                                    <option value="Edo">Edo</option>
-                                    <option value="Ekiti">Ekiti</option>
-                                    <option value="Gombe">Gombe</option>
-                                    <option value="Imo">Imo</option>
-                                    <option value="Jigawa">Jigawa</option>
-                                    <option value="Kaduna">Kaduna</option>
-                                    <option value="Kanu">Kanu</option>
-                                    <option value="Katsina">Katsina</option>
-                                    <option value="Kebbi">Kebbi</option>
-                                    <option value="Kogi">Kogi</option>
-                                    <option value="Kwara">Kwara</option>
-                                    <option value="Lagos">Lagos</option>
-                                    <option value="Nasarawa">Nasarawa</option>
-                                    <option value="Niger">Niger</option>
-                                    <option value="Ogun">Ogun</option>
-                                    <option value="Ondo">Ondo</option>
-                                    <option value="Osun">Osun</option>
-                                    <option value="Oyo">Oyo</option>
-                                    <option value="Plateau">Plateau</option>
-                                    <option value="Rivers">Rivers</option>
-                                    <option value="Sokoto">Sokoto</option>
-                                    <option value="Taraba">Taraba</option>
-                                    <option value="Yobe">Yobe</option>
-                                    <option value="Zamfara">Zamfara</option>
-                                    <option value="Abuja">Abuja</option>
-                                    <option value="Annonymous">Annonymous</option>
-                                </select>
-                                <div class="error">*</div>
-                            </div>
-                            <div class="text-center mt-1-half myHead-nxt">
-                                <button class="btn btn-info mb-2">Suggest<i class="fa fa-send ml-1"></i></button>
-                            </div>
+                            <form action="<?php echo htmlspecialchars('actions.php'); ?>" method="POST">
+                                <div class="md-form form-sm">
+                                    <i class="fa fa-tag prefix"></i>
+                                    <input type="text" id="SuggestTitle" name="SuggestTitle" class="form-control">
+                                    <label for="form21">Enter Section Title</label>
+                                    <div class="error">*</div>
+                                </div>
+                                <div class="col-md-12 mr-auto">
+                                    <select class="form-control" id="SuggestLocation" name="SuggestLocation"> 
+                                        <option value="" disabled selected>Select Location</option>
+                                        <?php 
+                                            $states = $locationController->getLocations();
+                                            while ($row = $states->fetch(PDO::FETCH_ASSOC)) {
+                                                extract($row);
+                                                echo "<option>$state</option>";
+                                            }
+                                        ?>
+                                    </select>
+                                    <div class="error">*</div>
+                                </div>
+                            
+                                <div class="text-center mt-1-half myHead-nxt">
+                                    <button class="btn btn-info mb-2" name="Suggest" id="Suggest">Suggest<i class="fa fa-send ml-1"></i></button>
+                                </div>
+                        </form>
                         </div>
                     </div>
                     <!--/.Content-->
@@ -279,48 +258,9 @@
         </div>
        
         <script type="text/javascript" src="res/js/compiled.js"></script>
+        <script type="text/javascript" src="res/js/script.js"></script>
         <script type="text/javascript">
-            $(document).ready(function()
-            {       
-                // function to get all records from table
-                function getAll(){
-                    
-                    $.ajax
-                    ({
-                        url: 'getproducts.php',
-                        data: 'action=showAll',
-                        cache: false,
-                        success: function(r)
-                        {
-                            $("#display").html(r);
-                        }
-                    });         
-                }
-                
-                getAll();
-                // function to get all records from table
-                
-                
-                // code to get all records from table via select box
-                $("#getProducts").change(function()
-                {               
-                    var id = $(this).find(":selected").val();
 
-                    var dataString = 'action='+ id;
-                            
-                    $.ajax
-                    ({
-                        url: 'getproducts.php',
-                        data: dataString,
-                        cache: false,
-                        success: function(r)
-                        {
-                            $("#display").html(r);
-                        } 
-                    });
-                })
-                // code to get all records from table via select box
-            });
         </script>
         
         <script>
@@ -345,3 +285,55 @@
         </script>
     </body>
 </html>
+
+<?php
+
+
+
+function uploadImage($target_dir) {
+
+    if (!empty(basename($_FILES['post_image']["name"]))) {
+        //$target_dir = '../res/img/';
+        $target_file = $target_dir . basename($_FILES['post_image']["name"]);
+        $uploadOK = 1;
+        $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+
+        global $error;
+
+        if (getimagesize($_FILES['post_image']["tmp_name"]) !== false) {
+            $uploadOK = 1;
+        } else {
+            $error[4] = "File is not an image";
+            $uploadOK = 0;
+        }
+
+// Check if the file already exist
+        if (file_exists($target_file)) {
+            //$error[6] = "Sorry, file already exists";
+            $uploadOK = 1;
+        }
+
+//Check file size
+     /*  if ($_FILES["post_image"]["size"] > 500000) {
+           $error[4] = "Sorry, Your file is too large.";
+           $uploadOK = 0;
+       }*/
+
+// Allow certain file formats
+        if ($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" && $imageFileType != "gif") {
+            $error[4] = "Sorry, only JPG, JPEG, PNG, GIF files are allowed";
+            $uploadOK = 0;
+        }
+
+// Check if $uploadOK is set to 0 by an error
+        if ($uploadOK == 1) {
+            if (move_uploaded_file($_FILES['post_image']["tmp_name"], $target_file)) {
+                return dirname($target_file) . '/' . basename($_FILES['post_image']["name"]);
+            } else {
+                $error[4] = "Sorry, there was an error uploading your file.";
+            }
+        }
+    } else {
+        $error[4] = "Please Select an Image";
+    }
+}

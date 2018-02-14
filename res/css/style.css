@@ -87,6 +87,7 @@ background-size: cover;
     }
     .myhead2{
         display: none;
+        float: left;
         visibility: hidden;
     }
     .xsDisplay{
@@ -267,4 +268,8 @@ h2,h3,p{orphans:3;widows:3}h2,h3{page-break-after:avoid}.navbar{display:none}.ba
 .news-data p, .news-data h3{
     padding-left: 20px;
     padding-right: 20px;
+}
+
+#d{
+    display: none;
 }
